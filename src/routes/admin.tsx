@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Lock, Plus, Trash2, Upload, LogOut } from "lucide-react";
+import { ArrowLeft, Lock, Plus, Trash2, Upload, LogOut, ImagePlus } from "lucide-react";
 import { useCars, type Car } from "@/lib/cars-store";
 import { useGalleryImages } from "@/lib/gallery-store";
 import { uploadImage } from "@/lib/cloudinary";
@@ -89,7 +89,7 @@ function AdminPage() {
 
 function AdminDashboard() {
   const { cars, addCar, removeCar, resetCars } = useCars();
-  const { images, updateImage, resetGallery } = useGalleryImages();
+  const { images, addImage, updateImage, removeImage, resetGallery } = useGalleryImages();
 
   return (
     <div className="space-y-6">
@@ -109,7 +109,9 @@ function AdminDashboard() {
 
       <GalleryEditor
         images={images}
+        onAdd={addImage}
         onUpdate={updateImage}
+        onRemove={removeImage}
         onReset={resetGallery}
       />
 
@@ -144,17 +146,40 @@ function AdminDashboard() {
 
 function GalleryEditor({
   images,
+  onAdd,
   onUpdate,
+  onRemove,
   onReset,
 }: {
   images: string[];
-  onUpdate: (index: number, image: string) => void;
-  onReset: () => void;
+  onAdd: (image: string) => Promise<void>;
+  onUpdate: (index: number, image: string) => Promise<void>;
+  onRemove: (index: number) => Promise<void>;
+  onReset: () => Promise<void>;
 }) {
-  const onFile = (index: number, file: File) => {
-    const reader = new FileReader();
-    reader.onload = () => onUpdate(index, String(reader.result));
-    reader.readAsDataURL(file);
+  const [adding, setAdding] = useState(false);
+
+  const onReplaceFile = async (index: number, file: File) => {
+    try {
+      const url = await uploadImage(file);
+      await onUpdate(index, url);
+    } catch (err) {
+      console.error(err);
+      alert("Upload failed");
+    }
+  };
+
+  const onAddFile = async (file: File) => {
+    setAdding(true);
+    try {
+      const url = await uploadImage(file);
+      await onAdd(url);
+    } catch (err) {
+      console.error(err);
+      alert("Upload failed");
+    } finally {
+      setAdding(false);
+    }
   };
 
   return (
@@ -162,26 +187,45 @@ function GalleryEditor({
       <div className="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
         <div>
           <h2 className="font-[Space_Grotesk] text-lg font-semibold">Edit Gallery Images</h2>
-          <p className="text-sm text-muted-foreground">Replace any gallery photo shown on the home page.</p>
+          <p className="text-sm text-muted-foreground">Replace, add or delete gallery photos shown on the home page.</p>
         </div>
-        <button onClick={onReset} className="glass w-fit rounded-full px-4 py-2 text-xs">
-          Reset Gallery
-        </button>
+        <div className="flex items-center gap-2">
+          <label className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-semibold text-black hover:bg-white/90">
+            <ImagePlus className="size-3.5" />
+            {adding ? "Uploading…" : "Add Photo"}
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              disabled={adding}
+              onChange={(e) => e.target.files?.[0] && onAddFile(e.target.files[0])}
+            />
+          </label>
+          <button onClick={onReset} className="glass w-fit rounded-full px-4 py-2 text-xs">
+            Reset Gallery
+          </button>
+        </div>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {images.map((src, index) => (
           <div key={index} className="glass overflow-hidden rounded-2xl">
             <img src={src} alt={`Gallery ${index + 1}`} className="h-40 w-full object-cover" />
-            <div className="p-4">
-              <label className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-white px-4 py-2.5 text-sm font-semibold text-black hover:bg-white/90">
-                <Upload className="size-4" /> Replace Image
+            <div className="flex gap-2 p-4">
+              <label className="inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full bg-white px-4 py-2.5 text-sm font-semibold text-black hover:bg-white/90">
+                <Upload className="size-4" /> Replace
                 <input
                   type="file"
                   accept="image/*"
                   className="hidden"
-                  onChange={(e) => e.target.files?.[0] && onFile(index, e.target.files[0])}
+                  onChange={(e) => e.target.files?.[0] && onReplaceFile(index, e.target.files[0])}
                 />
               </label>
+              <button
+                onClick={() => onRemove(index)}
+                className="inline-flex items-center justify-center rounded-full bg-destructive/20 px-3 py-2.5 text-xs font-medium text-destructive-foreground hover:bg-destructive/30"
+              >
+                <Trash2 className="size-4" />
+              </button>
             </div>
           </div>
         ))}
@@ -190,7 +234,11 @@ function GalleryEditor({
   );
 }
 
-function AddCarForm({ onAdd }: { onAdd: (c: Omit<Car, "id">) => void }) {
+function AddCarForm({
+  onAdd,
+}: {
+  onAdd: (c: Omit<Car, "id">) => Promise<void>;
+}) {
   const [form, setForm] = useState({
     name: "",
     type: "Sedan",
@@ -213,13 +261,31 @@ const onFile = async (file: File) => {
     }
 };
 
-  const submit = (e: React.FormEvent) => {
+const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name || !form.price || !form.image) return;
-    onAdd(form);
-    setForm({ name: "", type: "Sedan", price: "", details: "", image: "" });
-  };
 
+    if (!form.name || !form.price || !form.image) {
+        alert("Please fill all required fields.");
+        return;
+    }
+
+    try {
+        await onAdd(form);
+
+        setForm({
+            name: "",
+            type: "Sedan",
+            price: "",
+            details: "",
+            image: "",
+        });
+
+        alert("Car added successfully!");
+    } catch (err) {
+        console.error(err);
+        alert("Failed to add car.");
+    }
+};
   const input = "w-full rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm outline-none placeholder:text-muted-foreground focus:border-accent";
 
   return (

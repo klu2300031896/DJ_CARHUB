@@ -1,37 +1,88 @@
 import { useEffect, useState } from "react";
+import { db } from "./firebase";
 
-const KEY = "djcarhub.gallery.v1";
+import {
+  collection,
+  getDocs,
+  addDoc,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
 
-export const defaultGalleryImages = [
-  "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=900&q=80",
-  "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=900&q=80",
-  "https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=900&q=80",
-  "https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&w=900&q=80",
-  "https://images.unsplash.com/photo-1542282088-72c9c27ed0cd?auto=format&fit=crop&w=900&q=80",
-  "https://images.unsplash.com/photo-1544636331-e26879cd4d9b?auto=format&fit=crop&w=900&q=80",
-];
+export const defaultGalleryImages: string[] = [];
 
 export function useGalleryImages() {
-  const [images, setImages] = useState<string[]>(defaultGalleryImages);
+  const [images, setImages] = useState<string[]>([]);
   const [hydrated, setHydrated] = useState(false);
 
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(KEY);
-      if (raw) setImages(JSON.parse(raw));
-    } catch {}
+  async function loadGallery() {
+    const snapshot = await getDocs(collection(db, "gallery"));
+
+    if (snapshot.empty) {
+      setImages(defaultGalleryImages);
+      setHydrated(true);
+      return;
+    }
+
+    const gallery = snapshot.docs.map(
+      (d) => d.data().image as string
+    );
+
+    setImages(gallery);
     setHydrated(true);
+  }
+
+  useEffect(() => {
+    loadGallery();
   }, []);
 
-  useEffect(() => {
-    if (!hydrated) return;
-    localStorage.setItem(KEY, JSON.stringify(images));
-  }, [images, hydrated]);
+  const updateImage = async (index: number, image: string) => {
+    const snapshot = await getDocs(collection(db, "gallery"));
+    const docs = snapshot.docs;
 
-  const updateImage = (index: number, image: string) =>
-    setImages((current) => current.map((src, i) => (i === index ? image : src)));
+    if (docs[index]) {
+      await deleteDoc(doc(db, "gallery", docs[index].id));
+    }
 
-  const resetGallery = () => setImages(defaultGalleryImages);
+    await addDoc(collection(db, "gallery"), {
+      image,
+    });
 
-  return { images, updateImage, resetGallery, hydrated };
+    await loadGallery();
+  };
+
+  // Add a brand-new image to the gallery
+  const addImage = async (image: string) => {
+    await addDoc(collection(db, "gallery"), { image });
+    setImages((prev) => [...prev, image]);
+  };
+
+  // Delete a gallery image by index
+  const removeImage = async (index: number) => {
+    const snapshot = await getDocs(collection(db, "gallery"));
+    const target = snapshot.docs[index];
+    if (target) {
+      await deleteDoc(doc(db, "gallery", target.id));
+    }
+    setImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const resetGallery = async () => {
+    const snapshot = await getDocs(collection(db, "gallery"));
+
+    for (const d of snapshot.docs) {
+      await deleteDoc(doc(db, "gallery", d.id));
+    }
+
+    await loadGallery();
+  };
+
+  return {
+    images,
+    addImage,
+    updateImage,
+    removeImage,
+    resetGallery,
+    hydrated,
+  };
 }
