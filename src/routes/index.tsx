@@ -1,118 +1,150 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
 import {
-  Car as CarIcon,
-  ShieldCheck,
-  KeyRound,
-  Headphones,
   Phone,
   MessageCircle,
   Instagram,
   MapPin,
-  Heart,
   ArrowRight,
-  Lock,
-  ChevronLeft,
-  ChevronRight,
   Menu,
   X,
-  Eye,
-  EyeOff,
+  Star,
+  Fuel,
+  Settings2,
+  Users,
+  ShieldCheck,
+  KeyRound,
+  Headphones,
+  Car as CarIcon,
+  ChevronDown,
 } from "lucide-react";
 import { useCars, type Car } from "@/lib/cars-store";
 import { useGalleryImages } from "@/lib/gallery-store";
 import logoAsset from "@/assets/dj-car-hub-logo.png.asset.json";
 
-export const Route = createFileRoute("/")({
-  component: Index,
-});
+export const Route = createFileRoute("/")(
+  {
+    head: () => ({
+      meta: [
+        { title: "DJ CAR HUB — Premium Car Rentals in Vijayawada & Mangalagiri" },
+        { name: "description", content: "Rent premium, self-drive and travel cars in Vijayawada & Mangalagiri. SUVs, Sedans, Hatchbacks available 24/7. Book via WhatsApp." },
+      ],
+    }),
+    component: Index,
+  }
+);
 
 const WHATSAPP = "917075499851";
 const PHONE = "+917075499851";
+const WA_LINK = `https://wa.me/${WHATSAPP}`;
 
 const navItems = [
-  { label: "Home", href: "#home" },
-  { label: "Our Cars", href: "#cars" },
-  { label: "About Us", href: "#about" },
-  { label: "Services", href: "#services" },
+  { label: "Home",    href: "#home" },
+  { label: "Cars",    href: "#cars" },
   { label: "Gallery", href: "#gallery" },
+  { label: "About",   href: "#about" },
   { label: "Contact", href: "#contact" },
 ];
 
+/* ────────────────────────────────────────────────────────────
+   NAVBAR
+──────────────────────────────────────────────────────────── */
 function Navbar() {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen]       = useState(false);
   const [scrolled, setScrolled] = useState(false);
+
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
+    const onScroll = () => setScrolled(window.scrollY > 60);
     onScroll();
-    window.addEventListener("scroll", onScroll);
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
   return (
-    <header className="fixed inset-x-0 top-0 z-50 px-4 pt-4">
-      <div
-        className={`mx-auto flex max-w-7xl items-center justify-between gap-4 transition-all ${
-          scrolled ? "drop-shadow-2xl" : ""
-        }`}
-      >
-        <a href="#home" className="flex shrink-0 items-center">
+    <header
+      className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${
+        scrolled
+          ? "bg-[#080808]/95 backdrop-blur-xl border-b border-[#C9A84C]/15 shadow-[0_4px_40px_rgba(0,0,0,0.6)]"
+          : "bg-transparent"
+      }`}
+    >
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 md:px-8 md:py-4">
+        {/* Logo */}
+        <a href="#home" className="shrink-0">
           <img
             src={logoAsset.url}
             alt="DJ CAR HUB"
-            className="h-16 w-auto object-contain drop-shadow-[0_0_18px_rgba(255,255,255,0.45)] md:h-24"
+            className="h-14 w-auto object-contain md:h-16"
+            style={{ filter: "drop-shadow(0 0 14px rgba(201,168,76,0.35))" }}
           />
         </a>
-        <nav className="glass hidden items-center rounded-2xl px-3 py-2 md:flex">
-          <ul className="flex items-center gap-1">
-            {navItems.map((n) => (
-              <li key={n.href}>
-                <a
-                  href={n.href}
-                  className={`rounded-full px-4 py-2 text-sm font-medium transition-colors hover:bg-white/10 hover:text-foreground ${
-                    n.href === "#home" ? "bg-white/15 text-foreground shadow-inner" : "text-muted-foreground"
-                  }`}
-                >
-                  {n.label}
-                </a>
-              </li>
-            ))}
-          </ul>
+
+        {/* Desktop Nav */}
+        <nav className="hidden items-center gap-1 md:flex">
+          {navItems.map((n) => (
+            <a
+              key={n.href}
+              href={n.href}
+              className="px-4 py-2 text-sm font-medium text-[#909090] transition-colors duration-200 hover:text-white relative group"
+            >
+              {n.label}
+              <span className="absolute bottom-0 left-4 right-4 h-px scale-x-0 bg-[#C9A84C] transition-transform duration-200 group-hover:scale-x-100" />
+            </a>
+          ))}
         </nav>
-        <Link
-          to="/admin"
-          className="glass hidden items-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold transition hover:bg-white/10 md:inline-flex"
-        >
-          Owner Area <Lock className="size-3.5" />
-        </Link>
+
+        {/* Desktop CTAs */}
+        <div className="hidden items-center gap-3 md:flex">
+          <a
+            href={WA_LINK}
+            target="_blank"
+            rel="noreferrer"
+            className="btn-gold inline-flex items-center gap-2 px-5 py-2.5 text-sm"
+          >
+            <MessageCircle className="size-4" /> Book Now
+          </a>
+          <Link
+            to="/admin"
+            className="rounded-full border border-white/15 px-4 py-2.5 text-xs text-[#909090] transition hover:border-white/30 hover:text-white"
+          >
+            Owner
+          </Link>
+        </div>
+
+        {/* Mobile toggle */}
         <button
-          className="glass grid size-11 place-items-center rounded-xl md:hidden"
+          className="grid size-10 place-items-center rounded-lg border border-white/10 bg-white/5 md:hidden"
           onClick={() => setOpen((v) => !v)}
           aria-label="Menu"
         >
           {open ? <X className="size-5" /> : <Menu className="size-5" />}
         </button>
       </div>
+
+      {/* Mobile Menu */}
       {open && (
-        <div className="glass mx-auto mt-2 max-w-7xl rounded-2xl p-3 md:hidden">
-          <ul className="flex flex-col">
+        <div className="border-t border-white/8 bg-[#0d0d0d] px-4 py-4 md:hidden">
+          <ul className="flex flex-col gap-1">
             {navItems.map((n) => (
               <li key={n.href}>
                 <a
                   href={n.href}
                   onClick={() => setOpen(false)}
-                  className="block rounded-lg px-4 py-2 text-sm hover:bg-white/5"
+                  className="block rounded-lg px-4 py-3 text-sm text-[#909090] transition hover:bg-white/5 hover:text-white"
                 >
                   {n.label}
                 </a>
               </li>
             ))}
-            <li>
-              <Link
-                to="/admin"
-                className="mt-1 flex items-center justify-between rounded-lg bg-white/10 px-4 py-2 text-sm"
+            <li className="mt-2">
+              <a
+                href={WA_LINK}
+                target="_blank"
+                rel="noreferrer"
+                className="btn-gold flex items-center justify-center gap-2 px-5 py-3 text-sm"
               >
-                Owner Area <Lock className="size-3.5" />
-              </Link>
+                <MessageCircle className="size-4" /> Book via WhatsApp
+              </a>
             </li>
           </ul>
         </div>
@@ -121,108 +153,118 @@ function Navbar() {
   );
 }
 
-function FloatingContacts() {
+/* ────────────────────────────────────────────────────────────
+   FLOATING WHATSAPP
+──────────────────────────────────────────────────────────── */
+function FloatingWhatsApp() {
   return (
-    <div className="fixed right-4 top-1/2 z-40 flex -translate-y-1/2 flex-col gap-3">
-      <a
-        href="https://instagram.com/djcarhub"
-        target="_blank"
-        rel="noreferrer"
-        className="glass grid size-11 place-items-center rounded-full transition hover:scale-110"
-        aria-label="Instagram"
-      >
-        <Instagram className="size-5" />
-      </a>
-      <a
-        href={`https://wa.me/${WHATSAPP}`}
-        target="_blank"
-        rel="noreferrer"
-        className="glass grid size-11 place-items-center rounded-full transition hover:scale-110"
-        aria-label="WhatsApp"
-      >
-        <MessageCircle className="size-5" />
-      </a>
-      <a
-        href={`tel:${PHONE}`}
-        className="glass grid size-11 place-items-center rounded-full transition hover:scale-110"
-        aria-label="Call"
-      >
-        <Phone className="size-5" />
-      </a>
-    </div>
+    <a
+      href={WA_LINK}
+      target="_blank"
+      rel="noreferrer"
+      aria-label="Chat on WhatsApp"
+      className="animate-wa-pulse fixed bottom-6 right-6 z-50 grid size-14 place-items-center rounded-full bg-[#25D366] shadow-lg transition hover:scale-110"
+    >
+      {/* WhatsApp SVG */}
+      <svg viewBox="0 0 32 32" className="size-7 fill-white" aria-hidden="true">
+        <path d="M16 2C8.268 2 2 8.268 2 16c0 2.487.647 4.82 1.776 6.845L2 30l7.357-1.732A13.93 13.93 0 0016 30c7.732 0 14-6.268 14-14S23.732 2 16 2zm0 25.6a11.57 11.57 0 01-5.865-1.594l-.42-.249-4.365 1.028 1.056-4.262-.274-.437A11.528 11.528 0 014.4 16C4.4 9.592 9.592 4.4 16 4.4S27.6 9.592 27.6 16 22.408 27.6 16 27.6zm6.316-8.667c-.345-.173-2.044-1.009-2.361-1.124-.316-.115-.546-.173-.776.173s-.891 1.124-1.093 1.354c-.201.23-.402.259-.747.086-.345-.173-1.457-.537-2.775-1.712-1.025-.913-1.717-2.041-1.918-2.386-.201-.345-.021-.531.151-.703.155-.155.345-.403.518-.605.172-.201.23-.345.345-.575.115-.23.057-.432-.029-.605-.086-.173-.776-1.87-1.063-2.56-.28-.673-.564-.58-.776-.591L11 11.4c-.23 0-.603.086-.919.432-.316.345-1.207 1.18-1.207 2.877 0 1.697 1.236 3.337 1.409 3.567.172.23 2.432 3.714 5.893 5.208.824.356 1.467.568 1.968.727.827.263 1.58.226 2.175.137.664-.1 2.044-.835 2.332-1.642.288-.806.288-1.497.201-1.642-.086-.144-.316-.23-.661-.403z"/>
+      </svg>
+    </a>
   );
 }
 
+/* ────────────────────────────────────────────────────────────
+   HERO
+──────────────────────────────────────────────────────────── */
 function Hero() {
   return (
-    <section
-      id="home"
-      className="relative overflow-hidden px-4 pt-32 pb-10 md:pt-40"
-    >
-      <div className="glass-strong mx-auto max-w-7xl overflow-hidden rounded-3xl">
-        <div className="relative grid gap-8 p-8 md:grid-cols-2 md:p-14">
-          <div className="animate-fadeup relative z-10 flex flex-col justify-center">
-            <div className="mb-4 inline-flex w-fit flex-wrap items-center gap-x-3 gap-y-1 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs uppercase tracking-widest text-muted-foreground">
-              <span className="inline-flex items-center gap-2">
-                <span className="size-1.5 rounded-full bg-green-500" /> MANGALAGIRI
-              </span>
-            </div>
-            <h1 className="font-[Space_Grotesk] text-5xl font-bold leading-[0.95] md:text-7xl">
-              DRIVE YOUR
-              <br />
-              <span className="text-gradient">JOURNEY</span>
-            </h1>
-            <p className="mt-5 max-w-md text-muted-foreground">
-              Premium cars for every occasion.
-              <br />
-              Self Drive · Rentals · Travels
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <a
-                href="#cars"
-                className="group inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-black transition hover:bg-white/90"
-              >
-                Explore Cars
-                <ArrowRight className="size-4 transition group-hover:translate-x-1" />
-              </a>
-              <a
-                href="#contact"
-                className="glass inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold"
-              >
-                Contact Us <Phone className="size-4" />
-              </a>
-            </div>
-          </div>
-          <div className="relative min-h-[280px] md:min-h-[420px]">
-            <div className="absolute inset-0 rounded-2xl bg-[url('/black-bmw-hero.png')] bg-cover bg-center" />
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-l from-transparent via-background/10 to-background/80" />
-          </div>
+    <section id="home" className="relative min-h-screen overflow-hidden">
+      {/* Full-bleed background image */}
+      <div
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: "url('/black-bmw-hero.png')" }}
+      />
+      {/* Multi-layer overlay for text readability */}
+      <div className="absolute inset-0 bg-gradient-to-r from-[#080808] via-[#080808]/80 to-[#080808]/30" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#080808] via-transparent to-transparent" />
+      {/* Gold radial accent */}
+      <div className="absolute -left-40 top-1/3 size-[500px] rounded-full bg-[#C9A84C]/6 blur-[100px] pointer-events-none" />
+
+      {/* Content */}
+      <div className="relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col justify-center px-4 pb-24 pt-28 md:px-8">
+        {/* Location badge */}
+        <div className="animate-slideup mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-[#C9A84C]/30 bg-[#C9A84C]/8 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-[#C9A84C]">
+          <span className="size-1.5 rounded-full bg-[#C9A84C] shadow-[0_0_6px_#C9A84C]" />
+          Vijayawada &amp; Mangalagiri
+        </div>
+
+        {/* Headline */}
+        <h1
+          className="animate-slideup font-[Space_Grotesk] text-5xl font-bold leading-[1.05] tracking-tight md:text-7xl lg:text-8xl"
+          style={{ animationDelay: "0.1s" }}
+        >
+          RENT YOUR
+          <br />
+          <span className="text-gold">DREAM CAR</span>
+        </h1>
+
+        <p
+          className="animate-slideup mt-6 max-w-lg text-base text-[#909090] md:text-lg"
+          style={{ animationDelay: "0.2s" }}
+        >
+          Premium self-drive &amp; travel cars in Vijayawada.<br />
+          Luxury · Comfort · Affordable.
+        </p>
+
+        {/* CTAs */}
+        <div
+          className="animate-slideup mt-10 flex flex-wrap gap-4"
+          style={{ animationDelay: "0.3s" }}
+        >
+          <a
+            href="#cars"
+            className="btn-gold inline-flex items-center gap-2 px-7 py-3.5 text-sm font-bold"
+          >
+            View Our Fleet <ArrowRight className="size-4" />
+          </a>
+          <a
+            href={WA_LINK}
+            target="_blank"
+            rel="noreferrer"
+            className="btn-outline-gold inline-flex items-center gap-2 px-7 py-3.5 text-sm"
+          >
+            <MessageCircle className="size-4" /> WhatsApp Us
+          </a>
+        </div>
+
+        {/* Scroll indicator */}
+        <div className="animate-scroll absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 opacity-40">
+          <span className="text-[10px] uppercase tracking-widest text-[#909090]">Scroll</span>
+          <ChevronDown className="size-4 text-[#C9A84C]" />
         </div>
       </div>
     </section>
   );
 }
 
-const features = [
-  { icon: CarIcon, title: "WIDE RANGE", text: "Explore a wide range of premium cars." },
-  { icon: ShieldCheck, title: "WELL MAINTAINED", text: "All cars are regularly serviced and inspected." },
-  { icon: KeyRound, title: "SELF DRIVE", text: "Enjoy the freedom of driving on your terms." },
-  { icon: Headphones, title: "24/7 SUPPORT", text: "We're here to assist you anytime, anywhere." },
+/* ────────────────────────────────────────────────────────────
+   TRUST STRIP
+──────────────────────────────────────────────────────────── */
+const stats = [
+  { value: "500+", label: "Happy Customers" },
+  { value: "50+",  label: "Premium Cars" },
+  { value: "24/7", label: "Customer Support" },
+  { value: "3+",   label: "Years of Trust" },
 ];
 
-function Features() {
+function TrustStrip() {
   return (
-    <section id="services" className="px-4 py-8">
-      <div className="glass-strong mx-auto grid max-w-7xl gap-6 rounded-3xl p-6 md:grid-cols-4 md:p-8">
-        {features.map((f) => (
-          <div key={f.title} className="flex items-start gap-4">
-            <div className="glass grid size-12 shrink-0 place-items-center rounded-2xl">
-              <f.icon className="size-5 text-accent" />
-            </div>
-            <div>
-              <div className="text-sm font-bold tracking-wider">{f.title}</div>
-              <p className="mt-1 text-xs text-muted-foreground">{f.text}</p>
-            </div>
+    <section className="border-y border-[#C9A84C]/12 bg-[#0d0d0d]">
+      <div className="mx-auto grid max-w-7xl grid-cols-2 divide-x divide-[#C9A84C]/12 md:grid-cols-4">
+        {stats.map((s) => (
+          <div key={s.label} className="flex flex-col items-center justify-center gap-1 px-6 py-8 text-center">
+            <span className="text-gold text-3xl font-bold font-[Space_Grotesk] md:text-4xl">{s.value}</span>
+            <span className="text-xs font-medium uppercase tracking-widest text-[#909090]">{s.label}</span>
           </div>
         ))}
       </div>
@@ -230,74 +272,137 @@ function Features() {
   );
 }
 
-function CarCard({ car }: { car: Car }) {
+/* ────────────────────────────────────────────────────────────
+   CAR CARD  (horizontal layout)
+──────────────────────────────────────────────────────────── */
+function parseCarDetails(details: string) {
+  const parts = details.split(/[·•\-,]/);
+  return {
+    fuel:  parts[0]?.trim() ?? "",
+    trans: parts[1]?.trim() ?? "",
+    seats: parts[2]?.trim() ?? "",
+  };
+}
+
+function CarCard({ car, index }: { car: Car; index: number }) {
+  const { fuel, trans, seats } = parseCarDetails(car.details);
+  const waMsg = encodeURIComponent(`Hi DJ CAR HUB, I'm interested in the ${car.name}. Please share availability.`);
+
   return (
-    <div className="glass group relative flex flex-col overflow-hidden rounded-3xl transition hover:-translate-y-1 hover:neon-glow">
-      <div className="relative aspect-[4/3] overflow-hidden">
+    <article
+      className="luxury-card luxury-card-hover group flex flex-col overflow-hidden md:flex-row"
+      style={{ animationDelay: `${index * 0.08}s` }}
+    >
+      {/* Image */}
+      <div className="relative aspect-[16/10] shrink-0 overflow-hidden md:aspect-auto md:w-[42%]">
         <img
           src={car.image}
           alt={car.name}
           loading="lazy"
-          className="size-full object-cover transition duration-700 group-hover:scale-110"
+          className="size-full object-cover transition duration-700 group-hover:scale-105"
         />
-        <button
-          className="glass absolute right-3 top-3 grid size-9 place-items-center rounded-full"
-          aria-label="Favorite"
-        >
-          <Heart className="size-4" />
-        </button>
-        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-background/90 to-transparent" />
+        {/* Gold left border accent on desktop */}
+        <div className="absolute inset-y-0 right-0 hidden w-px bg-gradient-to-b from-transparent via-[#C9A84C]/40 to-transparent md:block" />
+        {/* Type badge */}
+        <span className="absolute left-4 top-4 rounded-full bg-[#080808]/80 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-[#C9A84C] backdrop-blur-sm border border-[#C9A84C]/25">
+          {car.type}
+        </span>
       </div>
-      <div className="flex flex-1 flex-col p-5">
-        <div className="flex items-baseline justify-between gap-2">
-          <h3 className="font-[Space_Grotesk] text-lg font-semibold">{car.name}</h3>
-          <span className="text-xs text-accent">{car.price}</span>
+
+      {/* Details */}
+      <div className="flex flex-1 flex-col justify-between p-6 md:p-8">
+        <div>
+          {/* Stars */}
+          <div className="flex items-center gap-0.5 mb-3">
+            {[...Array(5)].map((_, i) => (
+              <Star key={i} className="size-3.5 fill-[#C9A84C] text-[#C9A84C]" />
+            ))}
+            <span className="ml-2 text-xs text-[#909090]">5.0</span>
+          </div>
+          <h3 className="font-[Space_Grotesk] text-2xl font-bold text-white md:text-3xl">{car.name}</h3>
+
+          {/* Spec pills */}
+          <div className="mt-4 flex flex-wrap gap-2">
+            {fuel && (
+              <span className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-[#909090]">
+                <Fuel className="size-3 text-[#C9A84C]" /> {fuel}
+              </span>
+            )}
+            {trans && (
+              <span className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-[#909090]">
+                <Settings2 className="size-3 text-[#C9A84C]" /> {trans}
+              </span>
+            )}
+            {seats && (
+              <span className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-[#909090]">
+                <Users className="size-3 text-[#C9A84C]" /> {seats}
+              </span>
+            )}
+          </div>
         </div>
-        <p className="mt-1 text-xs text-muted-foreground">{car.type} · {car.details}</p>
-        <a
-          href={`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(`Hi DJ CAR HUB, I'm interested in the ${car.name}.`)}`}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-5 inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/5 py-2.5 text-sm font-medium transition hover:bg-white/10"
-        >
-          View Details <ArrowRight className="size-4" />
-        </a>
+
+        {/* Price + CTA */}
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs text-[#909090] uppercase tracking-widest">Starting from</p>
+            <p className="text-gold mt-0.5 text-2xl font-bold font-[Space_Grotesk]">{car.price}</p>
+          </div>
+          <a
+            href={`https://wa.me/${WHATSAPP}?text=${waMsg}`}
+            target="_blank"
+            rel="noreferrer"
+            className="btn-gold inline-flex items-center justify-center gap-2 px-6 py-3 text-sm font-bold"
+          >
+            <MessageCircle className="size-4" /> Book via WhatsApp
+          </a>
+        </div>
       </div>
-    </div>
+    </article>
   );
 }
 
 function CarsSection() {
-  const { cars } = useCars();
+  const { cars, hydrated } = useCars();
   const [showAll, setShowAll] = useState(false);
   const visible = showAll ? cars : cars.slice(0, 4);
+
   return (
-    <section id="cars" className="px-4 py-16">
+    <section id="cars" className="px-4 py-20 md:px-8">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-10 text-center">
-          <div className="mx-auto flex items-center justify-center gap-4 text-muted-foreground">
-            <span className="h-px w-16 bg-white/20" />
-            <h2 className="font-[Space_Grotesk] text-3xl font-bold tracking-widest text-foreground">
-              OUR CARS
-            </h2>
-            <span className="h-px w-16 bg-white/20" />
+        {/* Section header */}
+        <div className="mb-14 text-center">
+          <p className="mb-3 text-xs font-bold uppercase tracking-[0.3em] text-[#C9A84C]">Our Fleet</p>
+          <h2 className="font-[Space_Grotesk] text-4xl font-bold md:text-5xl">
+            Choose Your <span className="text-gold">Perfect Ride</span>
+          </h2>
+          <p className="mt-4 text-[#909090]">Handpicked premium cars for every occasion and every journey.</p>
+          <div className="mx-auto mt-5 h-px w-24 bg-gradient-to-r from-transparent via-[#C9A84C]/60 to-transparent" />
+        </div>
+
+        {/* Cars */}
+        {!hydrated ? (
+          <div className="flex items-center justify-center py-24">
+            <div className="size-10 rounded-full border-2 border-[#C9A84C]/30 border-t-[#C9A84C] animate-spin" />
           </div>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Handpicked cars for every style and need.
-          </p>
-        </div>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {visible.map((c) => (
-            <CarCard key={c.id} car={c} />
-          ))}
-        </div>
+        ) : cars.length === 0 ? (
+          <div className="py-24 text-center text-[#909090]">No cars available yet.</div>
+        ) : (
+          <div className="flex flex-col gap-6">
+            {visible.map((c, i) => (
+              <CarCard key={c.id} car={c} index={i} />
+            ))}
+          </div>
+        )}
+
+        {/* Show more */}
         {cars.length > 4 && (
           <div className="mt-10 flex justify-center">
             <button
               onClick={() => setShowAll((s) => !s)}
-              className="glass inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium"
+              className="btn-outline-gold inline-flex items-center gap-2 px-8 py-3.5 text-sm"
             >
-              {showAll ? "Show Less" : "View All Cars"}
+              {showAll ? "Show Less" : `View All ${cars.length} Cars`}
+              <ArrowRight className={`size-4 transition-transform ${showAll ? "rotate-90" : ""}`} />
             </button>
           </div>
         )}
@@ -306,23 +411,80 @@ function CarsSection() {
   );
 }
 
+/* ────────────────────────────────────────────────────────────
+   GALLERY — Masonry
+──────────────────────────────────────────────────────────── */
 function Gallery() {
   const { images } = useGalleryImages();
 
   return (
-    <section id="gallery" className="px-4 py-16">
+    <section id="gallery" className="bg-[#0a0a0a] px-4 py-20 md:px-8">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-10 text-center">
-          <h2 className="font-[Space_Grotesk] text-3xl font-bold tracking-widest">GALLERY</h2>
-          <p className="mt-2 text-sm text-muted-foreground">A glimpse into our fleet.</p>
+        <div className="mb-14 text-center">
+          <p className="mb-3 text-xs font-bold uppercase tracking-[0.3em] text-[#C9A84C]">Gallery</p>
+          <h2 className="font-[Space_Grotesk] text-4xl font-bold md:text-5xl">
+            Our <span className="text-gold">Fleet Gallery</span>
+          </h2>
+          <div className="mx-auto mt-5 h-px w-24 bg-gradient-to-r from-transparent via-[#C9A84C]/60 to-transparent" />
         </div>
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-          {images.map((src, i) => (
+
+        {images.length === 0 ? (
+          <div className="py-16 text-center text-[#909090]">Gallery coming soon.</div>
+        ) : (
+          <div className="columns-2 gap-3 space-y-3 md:columns-3 lg:columns-4">
+            {images.map((src, i) => (
+              <div
+                key={i}
+                className="overflow-hidden rounded-xl border border-[#C9A84C]/12 break-inside-avoid transition duration-500 hover:border-[#C9A84C]/40 group"
+              >
+                <img
+                  src={src}
+                  alt={`Gallery ${i + 1}`}
+                  loading="lazy"
+                  className="w-full object-cover transition duration-700 group-hover:scale-105"
+                />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────
+   WHY CHOOSE US
+──────────────────────────────────────────────────────────── */
+const whyCards = [
+  { icon: CarIcon,      title: "Wide Range",       text: "SUVs, Sedans, Hatchbacks — a car for every trip and budget." },
+  { icon: ShieldCheck,  title: "Well Maintained",   text: "Every vehicle is regularly serviced and road-tested." },
+  { icon: KeyRound,     title: "Self Drive",        text: "Freedom to drive on your own schedule, anywhere." },
+  { icon: Headphones,   title: "24/7 Support",      text: "We're always reachable — day or night, call or WhatsApp." },
+];
+
+function WhyUs() {
+  return (
+    <section id="about" className="px-4 py-20 md:px-8">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-14 text-center">
+          <p className="mb-3 text-xs font-bold uppercase tracking-[0.3em] text-[#C9A84C]">Why Us</p>
+          <h2 className="font-[Space_Grotesk] text-4xl font-bold md:text-5xl">
+            Why <span className="text-gold">DJ CAR HUB</span>?
+          </h2>
+          <div className="mx-auto mt-5 h-px w-24 bg-gradient-to-r from-transparent via-[#C9A84C]/60 to-transparent" />
+        </div>
+
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {whyCards.map((c) => (
             <div
-              key={i}
-              className={`glass overflow-hidden rounded-2xl ${i % 5 === 0 ? "md:row-span-2" : ""}`}
+              key={c.title}
+              className="luxury-card luxury-card-hover group p-8"
             >
-              <img src={src} alt="Car" loading="lazy" className="h-full w-full object-cover transition duration-700 hover:scale-110" />
+              <div className="mb-5 flex size-12 items-center justify-center rounded-xl bg-[#C9A84C]/10 border border-[#C9A84C]/20 transition group-hover:bg-[#C9A84C]/20">
+                <c.icon className="size-5 text-[#C9A84C]" />
+              </div>
+              <h3 className="font-[Space_Grotesk] text-lg font-bold text-white">{c.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-[#909090]">{c.text}</p>
             </div>
           ))}
         </div>
@@ -331,173 +493,275 @@ function Gallery() {
   );
 }
 
-function AboutContact() {
+/* ────────────────────────────────────────────────────────────
+   CUSTOMER REVIEWS
+──────────────────────────────────────────────────────────── */
+const reviews = [
+  {
+    name: "Arjun Reddy",
+    location: "Vijayawada",
+    rating: 5,
+    text: "Absolutely fantastic service! Booked a Fortuner for my family trip and it was spotlessly clean and well-maintained. Will definitely rent again!",
+  },
+  {
+    name: "Priya Sharma",
+    location: "Mangalagiri",
+    rating: 5,
+    text: "Very professional team. The car was delivered on time and the price is very reasonable. WhatsApp booking is super convenient.",
+  },
+  {
+    name: "Kiran Kumar",
+    location: "Guntur",
+    rating: 5,
+    text: "Rented a sedan for a wedding trip. Excellent condition, great mileage, and the DJ CAR HUB team was very responsive and helpful throughout.",
+  },
+];
+
+function Reviews() {
   return (
-    <section id="about" className="px-4 py-8">
-      <div className="mx-auto grid max-w-7xl gap-6 md:grid-cols-2">
-        <div className="glass-strong flex overflow-hidden rounded-3xl">
-          <div className="flex flex-1 flex-col p-8">
-            <h3 className="font-[Space_Grotesk] text-2xl font-bold tracking-wide">
-              ABOUT DJ CAR HUB
-            </h3>
-            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-              At DJ CAR HUB, we believe every journey should be comfortable,
-              stylish, and memorable. Whether it's a city ride, weekend
-              getaway, or long drive, we've got the perfect wheels for you.
-            </p>
-            <a
-              href="#contact"
-              className="mt-6 inline-flex w-fit items-center gap-2 rounded-full bg-white/10 px-5 py-2.5 text-sm font-medium hover:bg-white/15"
-            >
-              Know More <ArrowRight className="size-4" />
-            </a>
-          </div>
-          <div className="hidden w-1/2 md:block">
-            <img
-              src="https://images.unsplash.com/photo-1580414057403-c5f451f30e1c?auto=format&fit=crop&w=1000&q=80"
-              alt="Showroom"
-              className="h-full w-full object-cover"
-            />
-          </div>
+    <section className="bg-[#0a0a0a] px-4 py-20 md:px-8">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-14 text-center">
+          <p className="mb-3 text-xs font-bold uppercase tracking-[0.3em] text-[#C9A84C]">Testimonials</p>
+          <h2 className="font-[Space_Grotesk] text-4xl font-bold md:text-5xl">
+            What Our <span className="text-gold">Customers Say</span>
+          </h2>
+          <div className="mx-auto mt-5 h-px w-24 bg-gradient-to-r from-transparent via-[#C9A84C]/60 to-transparent" />
         </div>
-        <div id="contact" className="glass-strong grid overflow-hidden rounded-3xl md:grid-cols-2">
-          <div className="p-8">
-            <h3 className="font-[Space_Grotesk] text-2xl font-bold tracking-wide">OUR DETAILS</h3>
-            <ul className="mt-5 space-y-4 text-sm">
-              <li className="flex items-center gap-3">
-                <span className="glass grid size-8 place-items-center rounded-lg"><Phone className="size-4" /></span>
-                <a href="tel:+917075499851">7075499851</a>
-              </li>
-              <li className="flex items-center gap-3">
-                <span className="glass grid size-8 place-items-center rounded-lg"><Phone className="size-4" /></span>
-                <a href="tel:+917075799851">7075799851</a>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="glass grid size-8 place-items-center rounded-lg"><MapPin className="size-4" /></span>
-                <span className="text-muted-foreground">
-                  R&amp;B Bungalow, Yearabelam Railway Gate Road, Vijayawada – 520008
-                </span>
-              </li>
-              <li className="flex flex-wrap gap-x-4 gap-y-1 pl-11 text-xs uppercase tracking-widest text-muted-foreground">
-                <span className="inline-flex items-center gap-2">
-                  <span className="size-1.5 rounded-full bg-red-500" /> Vijayawada
-                </span>
-                <span className="inline-flex items-center gap-2">
-                  <span className="size-1.5 rounded-full bg-green-500" /> MANGALAGIRI
-                </span>
-              </li>
-              <li className="flex items-center gap-3">
-                <span className="glass grid size-8 place-items-center rounded-lg"><Instagram className="size-4" /></span>
-                <a href="https://instagram.com/djcarhub" target="_blank" rel="noreferrer">@djcarhub</a>
-              </li>
-            </ul>
-          </div>
-          <div className="min-h-[260px] p-3">
+
+        <div className="grid gap-6 md:grid-cols-3">
+          {reviews.map((r) => (
+            <div key={r.name} className="luxury-card luxury-card-hover p-8">
+              {/* Stars */}
+              <div className="flex gap-0.5">
+                {[...Array(r.rating)].map((_, i) => (
+                  <Star key={i} className="size-4 fill-[#C9A84C] text-[#C9A84C]" />
+                ))}
+              </div>
+              {/* Quote */}
+              <p className="mt-5 text-sm leading-relaxed text-[#909090]">"{r.text}"</p>
+              {/* Author */}
+              <div className="mt-6 flex items-center gap-3">
+                <div className="flex size-10 items-center justify-center rounded-full bg-[#C9A84C]/15 text-[#C9A84C] font-bold font-[Space_Grotesk] text-sm border border-[#C9A84C]/25">
+                  {r.name[0]}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-white">{r.name}</p>
+                  <p className="text-xs text-[#909090]">{r.location}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────
+   CONTACT  (split: map + details)
+──────────────────────────────────────────────────────────── */
+function Contact() {
+  return (
+    <section id="contact" className="px-4 py-20 md:px-8">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-14 text-center">
+          <p className="mb-3 text-xs font-bold uppercase tracking-[0.3em] text-[#C9A84C]">Contact</p>
+          <h2 className="font-[Space_Grotesk] text-4xl font-bold md:text-5xl">
+            Get In <span className="text-gold">Touch</span>
+          </h2>
+          <div className="mx-auto mt-5 h-px w-24 bg-gradient-to-r from-transparent via-[#C9A84C]/60 to-transparent" />
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* Map */}
+          <div className="overflow-hidden rounded-2xl border border-[#C9A84C]/15" style={{ minHeight: 380 }}>
             <iframe
-              title="Location"
-              className="h-full min-h-[260px] w-full rounded-2xl border-0 grayscale-[0.4]"
+              title="DJ CAR HUB Location"
+              className="h-full min-h-[380px] w-full border-0"
               src="https://www.google.com/maps?q=Vijayawada%20Mangalagiri&output=embed"
               loading="lazy"
             />
           </div>
-        </div>
-      </div>
-    </section>
-  );
-}
 
-function OwnerAccessBar() {
-  const navigate = useNavigate();
-  const [pw, setPw] = useState("");
-  const [show, setShow] = useState(false);
-  const [err, setErr] = useState("");
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (pw === "DJCARHUB@123") {
-      sessionStorage.setItem("djcarhub.admin.session", "1");
-      navigate({ to: "/admin" });
-    } else {
-      setErr("Incorrect password");
-    }
-  };
-  return (
-    <section className="px-4 py-8">
-      <div className="glass-strong mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 rounded-3xl p-6 md:flex-row">
-        <div className="flex items-center gap-4">
-          <div className="glass grid size-12 place-items-center rounded-2xl">
-            <Lock className="size-5" />
-          </div>
-          <div>
-            <div className="font-[Space_Grotesk] font-bold tracking-wide">OWNER ACCESS</div>
-            <div className="text-xs text-muted-foreground">
-              Only authorized access. Enter password to manage cars.
+          {/* Details card */}
+          <div className="luxury-card flex flex-col justify-between p-8 md:p-10">
+            <div>
+              <h3 className="font-[Space_Grotesk] text-2xl font-bold text-white">DJ CAR HUB</h3>
+              <p className="mt-1 text-sm text-[#909090]">Available every day, anytime you need us.</p>
+
+              <ul className="mt-8 space-y-5">
+                <li>
+                  <a
+                    href={`tel:${PHONE}`}
+                    className="flex items-center gap-4 group"
+                  >
+                    <span className="flex size-11 items-center justify-center rounded-xl border border-[#C9A84C]/25 bg-[#C9A84C]/8 text-[#C9A84C] transition group-hover:bg-[#C9A84C]/20">
+                      <Phone className="size-5" />
+                    </span>
+                    <div>
+                      <p className="text-xs uppercase tracking-widest text-[#909090]">Phone</p>
+                      <p className="mt-0.5 font-semibold text-white">7075499851 / 7075799851</p>
+                    </div>
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href={WA_LINK}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-4 group"
+                  >
+                    <span className="flex size-11 items-center justify-center rounded-xl border border-[#25D366]/25 bg-[#25D366]/8 text-[#25D366] transition group-hover:bg-[#25D366]/20">
+                      <MessageCircle className="size-5" />
+                    </span>
+                    <div>
+                      <p className="text-xs uppercase tracking-widest text-[#909090]">WhatsApp</p>
+                      <p className="mt-0.5 font-semibold text-white">Chat with us instantly</p>
+                    </div>
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://instagram.com/djcarhub"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-4 group"
+                  >
+                    <span className="flex size-11 items-center justify-center rounded-xl border border-purple-500/25 bg-purple-500/8 text-purple-400 transition group-hover:bg-purple-500/20">
+                      <Instagram className="size-5" />
+                    </span>
+                    <div>
+                      <p className="text-xs uppercase tracking-widest text-[#909090]">Instagram</p>
+                      <p className="mt-0.5 font-semibold text-white">@djcarhub</p>
+                    </div>
+                  </a>
+                </li>
+                <li className="flex items-start gap-4">
+                  <span className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-[#C9A84C]/25 bg-[#C9A84C]/8 text-[#C9A84C]">
+                    <MapPin className="size-5" />
+                  </span>
+                  <div>
+                    <p className="text-xs uppercase tracking-widest text-[#909090]">Location</p>
+                    <p className="mt-0.5 text-sm leading-relaxed text-white">
+                      R&amp;B Bungalow, Yearabelam Railway Gate Road,<br />
+                      Vijayawada – 520008
+                    </p>
+                    <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1">
+                      <span className="inline-flex items-center gap-1.5 text-xs text-[#909090]">
+                        <span className="size-1.5 rounded-full bg-red-500" /> Vijayawada
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 text-xs text-[#909090]">
+                        <span className="size-1.5 rounded-full bg-green-500" /> Mangalagiri
+                      </span>
+                    </div>
+                  </div>
+                </li>
+              </ul>
             </div>
+
+            {/* Book CTA */}
+            <a
+              href={WA_LINK}
+              target="_blank"
+              rel="noreferrer"
+              className="btn-gold mt-10 flex items-center justify-center gap-2 py-4 text-sm font-bold"
+            >
+              <MessageCircle className="size-4" /> Book Now via WhatsApp
+            </a>
           </div>
         </div>
-        <form onSubmit={submit} className="flex w-full flex-col gap-2 md:w-auto md:flex-row md:items-center">
-          <div className="relative">
-            <input
-              type={show ? "text" : "password"}
-              value={pw}
-              onChange={(e) => { setPw(e.target.value); setErr(""); }}
-              placeholder="Enter Password"
-              className="w-full rounded-full border border-white/15 bg-white/5 px-5 py-3 pr-11 text-sm outline-none placeholder:text-muted-foreground focus:border-accent md:w-72"
-            />
-            <button
-              type="button"
-              onClick={() => setShow((s) => !s)}
-              aria-label={show ? "Hide password" : "Show password"}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-            >
-              {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-            </button>
-          </div>
-          <button className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-black hover:bg-white/90">
-            Unlock
-          </button>
-          {err && <p className="text-xs text-destructive md:ml-2">{err}</p>}
-        </form>
       </div>
     </section>
   );
 }
 
+/* ────────────────────────────────────────────────────────────
+   FOOTER
+──────────────────────────────────────────────────────────── */
 function Footer() {
   return (
-    <footer className="px-4 py-10">
-      <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 md:flex-row">
-        <img
-          src={logoAsset.url}
-          alt="DJ CAR HUB"
-          className="h-24 w-auto object-contain drop-shadow-[0_0_12px_rgba(255,255,255,0.35)] md:h-28"
-        />
-        <p className="text-xs text-muted-foreground">
-          © 2025 DJ CAR HUB. All Rights Reserved.
-        </p>
-        <div className="flex gap-2">
-          <a href="https://instagram.com/djcarhub" className="glass grid size-10 place-items-center rounded-full"><Instagram className="size-4" /></a>
-          <a href={`https://wa.me/${WHATSAPP}`} className="glass grid size-10 place-items-center rounded-full"><MessageCircle className="size-4" /></a>
-          <a href={`tel:${PHONE}`} className="glass grid size-10 place-items-center rounded-full"><Phone className="size-4" /></a>
+    <footer className="border-t border-[#C9A84C]/12 bg-[#060606] px-4 py-12 md:px-8">
+      <div className="mx-auto max-w-7xl">
+        <div className="flex flex-col items-center justify-between gap-8 md:flex-row md:items-start">
+          {/* Brand */}
+          <div className="flex flex-col items-center gap-4 md:items-start">
+            <img
+              src={logoAsset.url}
+              alt="DJ CAR HUB"
+              className="h-14 w-auto object-contain"
+              style={{ filter: "drop-shadow(0 0 12px rgba(201,168,76,0.3))" }}
+            />
+            <p className="max-w-xs text-center text-xs leading-relaxed text-[#909090] md:text-left">
+              Premium car rentals in Vijayawada &amp; Mangalagiri.<br />
+              Self Drive · Travels · 24/7 Support.
+            </p>
+          </div>
+
+          {/* Nav */}
+          <nav className="flex flex-wrap justify-center gap-x-8 gap-y-2 md:justify-end">
+            {navItems.map((n) => (
+              <a
+                key={n.href}
+                href={n.href}
+                className="text-sm text-[#909090] transition hover:text-[#C9A84C]"
+              >
+                {n.label}
+              </a>
+            ))}
+          </nav>
+
+          {/* Socials */}
+          <div className="flex gap-3">
+            <a
+              href="https://instagram.com/djcarhub"
+              target="_blank"
+              rel="noreferrer"
+              className="flex size-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-[#909090] transition hover:border-[#C9A84C]/40 hover:text-[#C9A84C]"
+            >
+              <Instagram className="size-4" />
+            </a>
+            <a
+              href={WA_LINK}
+              target="_blank"
+              rel="noreferrer"
+              className="flex size-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-[#909090] transition hover:border-[#25D366]/40 hover:text-[#25D366]"
+            >
+              <MessageCircle className="size-4" />
+            </a>
+            <a
+              href={`tel:${PHONE}`}
+              className="flex size-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-[#909090] transition hover:border-[#C9A84C]/40 hover:text-[#C9A84C]"
+            >
+              <Phone className="size-4" />
+            </a>
+          </div>
+        </div>
+
+        <div className="mt-10 border-t border-white/6 pt-6 text-center text-xs text-[#909090]">
+          © {new Date().getFullYear()} DJ CAR HUB. All Rights Reserved. &nbsp;|&nbsp; Vijayawada, Andhra Pradesh.
         </div>
       </div>
     </footer>
   );
 }
 
+/* ────────────────────────────────────────────────────────────
+   ROOT PAGE
+──────────────────────────────────────────────────────────── */
 function Index() {
-  // silence unused
-  void ChevronLeft;
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[#080808]">
       <Navbar />
-      <FloatingContacts />
+      <FloatingWhatsApp />
       <main>
         <Hero />
-        <Features />
+        <TrustStrip />
         <CarsSection />
         <Gallery />
-        <AboutContact />
-        <OwnerAccessBar />
+        <WhyUs />
+        <Reviews />
+        <Contact />
       </main>
       <Footer />
     </div>
