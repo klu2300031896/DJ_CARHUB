@@ -251,10 +251,10 @@ function Hero() {
    TRUST STRIP
 ──────────────────────────────────────────────────────────── */
 const stats = [
-  { value: "500+", label: "Happy Customers" },
-  { value: "50+",  label: "Premium Cars" },
+  { value: "100+", label: "Happy Customers" },
+  { value: "10+",  label: "Premium Cars" },
   { value: "24/7", label: "Customer Support" },
-  { value: "3+",   label: "Years of Trust" },
+  { value: "2+",   label: "Years of Trust" },
 ];
 
 function TrustStrip() {
